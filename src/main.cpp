@@ -1,9 +1,8 @@
-
-
 #include <NTPClient.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <TM1637Display.h>     //
+#include <ESPAsyncWebServer.h>
 
 #define CLK 22                     // Define the connections pins:
 #define DIO 23
@@ -22,11 +21,16 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 uint32_t chipId = 0;
+// Define LED et capteur 
+const int led = 2;
+const int capteurLuminosite = 34;
 
-
+AsyncWebServer server(80);
 
 void setup(){ 
+  //Serial
   Serial.begin(115200);
+  Serial.println("\n");
    // Clear the display:
   display.clear();
   
