@@ -3,8 +3,8 @@
 #include <WiFiUdp.h>
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
-
-#define CLK 22                     // Define the connections pins:
+// Define the connections pins:
+#define CLK 22                     
 #define DIO 23
 
 TM1637Display display = TM1637Display(CLK, DIO);              // Create display object of type TM1637Display:
