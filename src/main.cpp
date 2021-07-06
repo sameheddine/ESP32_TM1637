@@ -3,6 +3,7 @@
 #include <WiFiUdp.h>
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
 // Define the connections pins:
 #define CLK 22                     
 #define DIO 23
@@ -24,6 +25,9 @@ uint32_t chipId = 0;
 // Define LED et capteur 
 const int led = 2;
 const int capteurLuminosite = 34;
+int valeurTimeZone = 0;
+bool etatLed = 0;
+bool etatLedVoulu = 0;
 
 AsyncWebServer server(80);
 
@@ -31,6 +35,29 @@ void setup(){
   //Serial
   Serial.begin(115200);
   Serial.println("\n");
+  //GPIO
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
+  pinMode(capteurLuminosite, INPUT);
+  //SPIFFS
+   if (!SPIFFS.begin())
+  {
+    Serial.println("Erreur SPIFFS...");
+    return;
+  }
+
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+
+  while (file)
+  {
+    Serial.print("File: ");
+    Serial.println(file.name());
+    file.close();
+    file = root.openNextFile();
+  }
+
+
    // Clear the display:
   display.clear();
   
