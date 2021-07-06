@@ -56,30 +56,58 @@ void setup(){
     file.close();
     file = root.openNextFile();
   }
-
-
-   // Clear the display:
-  display.clear();
-  
+  //WIFI
   WiFi.begin(ssid, password);
 
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println(".");
-    Serial.print("Conntect to ");
+  Serial.print("Connection attempt ...");
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(100);
+  }
+  Serial.print("Conntect to ");
     Serial.println(ssid);
     Serial.println("ESP IP");
     Serial.println(WiFi.localIP());
     Serial.println("MAC Address");
     Serial.println(WiFi.macAddress());
-    Serial.println(timeClient.getHours());
-    Serial.println(timeClient.getMinutes());
+  //SERVER
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
 
-  }
-  
-  
-  
+  server.on("/w3.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/w3.css", "text/css");
+  });
+
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/script.js", "text/javascript");
+  });
+
+  server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
+  });
+  server.on("/lireLuminosite", HTTP_GET, [](AsyncWebServerRequest *request) {
+    int val = analogRead(capteurLuminosite);
+    String luminosite = String(val);
+    request->send(200, "text/plain", luminosite);
+  });
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
+    etatLedVoulu = 1;
+    request->send(204);
+  });
+
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request) {
+    etatLedVoulu = 0;
+    digitalWrite(led, LOW);
+    etatLed = 0;
+    request->send(204);
+  });
+
+
+   // Clear the display:
+  display.clear();
   timeClient.begin();
   
   
