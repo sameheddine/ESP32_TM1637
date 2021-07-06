@@ -1,24 +1,11 @@
 $(document).ready(function(){
-    $("#appliquer").click(function(){
-        var valeur = $("#choixDelayLed").val();
-        $.post("delayLed",{
-            valeurDelayLed: valeur
+    $("#apply").click(function(){
+        var valeur = $("#choixTimeZone").val();
+        $.post("timeZone",{
+            valeurTimeZone: valeur
         });
     });
 });
-
-setInterval(function getData() {
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("valeurLuminosite").innerHTML = this.responseText;
-        }
-    };
-
-    xhttp.open("GET", "lireLuminosite", true);
-    xhttp.send();
-}, 2000);
 
 function onButton() {
     var xhttp = new XMLHttpRequest();
