@@ -1,6 +1,6 @@
 #include <NTPClient.h>
-#include <WiFi.h>
-#include <WiFiUdp.h>
+//#include <WiFi.h>
+//#include <WiFiUdp.h>
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
@@ -25,9 +25,10 @@ uint32_t chipId = 0;
 // Define LED et capteur 
 const int led = 2;
 const int capteurLuminosite = 34;
-int valeurTimeZone = 0;
 bool etatLed = 0;
 bool etatLedVoulu = 0;
+//Define Time Zone
+int valeurTimeZone = 0;
 
 AsyncWebServer server(80);
 
@@ -35,10 +36,12 @@ void setup(){
   //Serial
   Serial.begin(115200);
   Serial.println("\n");
+  
   //GPIO
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
   pinMode(capteurLuminosite, INPUT);
+  
   //SPIFFS
    if (!SPIFFS.begin())
   {
@@ -56,22 +59,24 @@ void setup(){
     file.close();
     file = root.openNextFile();
   }
+  
   //WIFI
   WiFi.begin(ssid, password);
 
-  Serial.print("Connection attempt ...");
+  Serial.println("Connection attempt ...");
 
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(100);
   }
-  Serial.print("Conntect to ");
+  Serial.println("Conntect to ");
     Serial.println(ssid);
     Serial.println("ESP IP");
     Serial.println(WiFi.localIP());
     Serial.println("MAC Address");
     Serial.println(WiFi.macAddress());
+  
   //SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html");
@@ -93,18 +98,21 @@ void setup(){
     String luminosite = String(val);
     request->send(200, "text/plain", luminosite);
   });
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
-    etatLedVoulu = 1;
-    request->send(204);
+  
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
+    digitalWrite(led, HIGH);
+    request->send(200);
   });
 
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-    etatLedVoulu = 0;
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
+  {
     digitalWrite(led, LOW);
-    etatLed = 0;
-    request->send(204);
+    request->send(200);
   });
 
+  server.begin();
+  Serial.println("Serveur actif!");
 
    // Clear the display:
   display.clear();
