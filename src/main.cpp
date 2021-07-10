@@ -14,9 +14,8 @@ TM1637Display display = TM1637Display(CLK, DIO);
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 
-//Define Time Zone
-//int valeurTimeZone = 0;
-//const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+// Variables to save timezone
+//int valeurTimeZone =3600;
     
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
@@ -69,6 +68,8 @@ void setup(){
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.println("MAC Address");
+  Serial.println(WiFi.macAddress());
   
   //SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -87,47 +88,43 @@ void setup(){
     request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
   });
     
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request){
     digitalWrite(led, HIGH);
     request->send(204);
   });
 
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request){
     digitalWrite(led, LOW);
     request->send(204);
   });
- 
-  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
-  {
+  
+  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)  {
     String message;
-    if(request->hasParam("valeurTimeZone", true))
+    if(request ->hasParam("valeurTimeZone", true))
     {
       message = request ->getParam("valeurTimeZone", true)->value();
-      valeurTimeZone = message.toInt();
+      //valeurTimeZone = message.toInt();
     }
     request->send(204);
-    Serial.println(valeurTimeZone);
-
-    
+    Serial.println(message);
   });
+  
   server.begin();
   Serial.println("Serveur actif!");
   
   timeClient.begin();
   timeClient.setTimeOffset(3600);
   display.clear();
-  
-  
+    
 }
 
 void loop() {
-  int A,B;
-  
-  timeClient.update();
+  while(!timeClient.update()) {
+    timeClient.forceUpdate();
+  }
   display.setBrightness(7);                   // Set the brightness:
   
+  int A,B;
   A = timeClient.getHours() * 100 + timeClient.getMinutes();
   B = timeClient.getSeconds();
   
@@ -139,5 +136,5 @@ void loop() {
   {
     display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
   }
- 
+  
 }
