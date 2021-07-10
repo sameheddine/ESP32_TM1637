@@ -1,17 +1,19 @@
 #include <NTPClient.h>
-//#include <WiFi.h>
-//#include <WiFiUdp.h>
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
+
 // Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
+
  // Create display object of type TM1637Display:
 TM1637Display display = TM1637Display(CLK, DIO);             
+
+// Network credentials
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
-#define WIFI_TIMEOUT_MS 2000
+
 
 //Define Time Zone
 int valeurTimeZone = 0;
