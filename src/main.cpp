@@ -1,29 +1,27 @@
 #include <NTPClient.h>
-//#include <WiFi.h>
-//#include <WiFiUdp.h>
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
+
 // Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
+
  // Create display object of type TM1637Display:
 TM1637Display display = TM1637Display(CLK, DIO);             
+
+//Network credentials
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
-#define WIFI_TIMEOUT_MS 2000
 
 //Define Time Zone
 int valeurTimeZone = 0;
 const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
     
-
-
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-uint32_t chipId = 0;
 // Define LED et capteur 
 const int led = 2;
 const int capteurLuminosite = 34;
@@ -33,9 +31,21 @@ bool etatLedVoulu = 0;
 AsyncWebServer server(80);
 
 void setup(){ 
-  //Serial
+  // Initialize Serial Monitor
   Serial.begin(115200);
-  Serial.println("\n");
+
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  // Print local IP address and start web server
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
   
   //GPIO
   pinMode(led, OUTPUT);
@@ -60,22 +70,7 @@ void setup(){
     file = root.openNextFile();
   }
   
-  //WIFI
-  WiFi.begin(ssid, password);
-
-  Serial.println("Connection attempt ...");
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(100);
-  }
-  Serial.println("Conntect to ");
-    Serial.println(ssid);
-    Serial.println("ESP IP");
-    Serial.println(WiFi.localIP());
-    Serial.println("MAC Address");
-    Serial.println(WiFi.macAddress());
+  
   
   //SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
