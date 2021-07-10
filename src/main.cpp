@@ -4,7 +4,7 @@
 #include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-// Define the connections pins:
+// Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
 
@@ -15,8 +15,9 @@ const char *password = "ksmk@050703";
 #define WIFI_TIMEOUT_MS 2000
 
 //Define Time Zone
-int valeurTimeZone = 3600;
+int valeurTimeZone = 0;
 const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+    
 
 
 // Define NTP Client to get time
@@ -116,6 +117,8 @@ void setup(){
     }
     request->send(204);
     Serial.println(valeurTimeZone);
+
+    
   });
   server.begin();
   Serial.println("Serveur actif!");
