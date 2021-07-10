@@ -1,34 +1,42 @@
-#include <Arduino.h>
 #include <NTPClient.h>
+//#include <WiFi.h>
+//#include <WiFiUdp.h>
+#include <TM1637Display.h>     //
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-#include <TM1637Display.h>
-
-// Define the connections pins:
+// Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
-// Create display object of type TM1637Display:
-TM1637Display display = TM1637Display(CLK, DIO);              
-
-// Network credentials
+ // Create display object of type TM1637Display:
+TM1637Display display = TM1637Display(CLK, DIO);             
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
+#define WIFI_TIMEOUT_MS 2000
 
-// Define LED et capteur 
-const int led = 2;
-const int capteurLuminosite = 34;
+//Define Time Zone
+int valeurTimeZone = 0;
+const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+    
+
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+
+uint32_t chipId = 0;
+// Define LED et capteur 
+const int led = 2;
+const int capteurLuminosite = 34;
+bool etatLed = 0;
+bool etatLedVoulu = 0;
 
 AsyncWebServer server(80);
 
-
-void setup(){
-  // Initialize Serial Monitor
+void setup(){ 
+  //Serial
   Serial.begin(115200);
-
+  Serial.println("\n");
+  
   //GPIO
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
@@ -51,25 +59,24 @@ void setup(){
     file.close();
     file = root.openNextFile();
   }
-
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  
+  //WIFI
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+
+  Serial.println("Connection attempt ...");
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print(".");
+    delay(100);
   }
-
-  // Print local IP address and start web server
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.print("Conntect to ");
-  Serial.println(ssid);
-  Serial.println("ESP IP: ");
-  Serial.println(WiFi.localIP());
-  Serial.println("MAC Address");
-  Serial.println(WiFi.macAddress());
-
+  Serial.println("Conntect to ");
+    Serial.println(ssid);
+    Serial.println("ESP IP");
+    Serial.println(WiFi.localIP());
+    Serial.println("MAC Address");
+    Serial.println(WiFi.macAddress());
+  
   //SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html");
@@ -102,7 +109,6 @@ void setup(){
   server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
   {
     String message;
-    String valeurTimeZone;
     if(request->hasParam("valeurTimeZone", true))
     {
       message = request ->getParam("valeurTimeZone", true)->value();
@@ -110,25 +116,22 @@ void setup(){
     }
     request->send(204);
     Serial.println(valeurTimeZone);
-
     
   });
   server.begin();
   Serial.println("Serveur actif!");
 
-  // Initialize a NTPClient to get time
+   // Clear the display:
+  display.clear();
   timeClient.begin();
   
-  timeClient.setTimeOffset(3600);
-  display.clear();
+  
 }
 
 void loop() {
-  while(!timeClient.update()) {
-    timeClient.forceUpdate();
-  }
   int A,B;
-    
+  
+  timeClient.update();
   display.setBrightness(7);                   // Set the brightness:
   
   A = timeClient.getHours() * 100 + timeClient.getMinutes();
