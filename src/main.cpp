@@ -14,9 +14,6 @@ TM1637Display display = TM1637Display(CLK, DIO);
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 
-// Variables to save timezone
-//int valeurTimeZone =3600;
-    
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
