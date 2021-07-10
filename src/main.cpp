@@ -11,14 +11,20 @@
 // Create display object of type TM1637Display
 TM1637Display display = TM1637Display(CLK, DIO);              
 
+// Network credentials
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
-#define WIFI_TIMEOUT_MS 2000
 
+<<<<<<< Updated upstream
 //Define Time Zone
 int valeurTimeZone = 0;
 const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
     
+=======
+
+//Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = 3600; 
+>>>>>>> Stashed changes
 
 
 // Define NTP Client to get time
