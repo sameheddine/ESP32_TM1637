@@ -15,7 +15,7 @@ const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 
 //Define Time Zone
-int valeurTimeZone = 0;
+//int valeurTimeZone = 0;
 //const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
     
 // Define NTP Client to get time
