@@ -115,6 +115,7 @@ void setup(){
       valeurTimeZone = message.toInt();
     }
     request->send(204);
+    Serial.println(valeurTimeZone);
   });
   server.begin();
   Serial.println("Serveur actif!");
