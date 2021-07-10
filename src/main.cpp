@@ -16,17 +16,16 @@ const char *password = "ksmk@050703";
 
 //Define Time Zone
 int valeurTimeZone = 0;
-const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+//const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
     
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+NTPClient timeClient(ntpUDP);
 
 // Define LED et capteur 
 const int led = 2;
 const int capteurLuminosite = 34;
-bool etatLed = 0;
-bool etatLedVoulu = 0;
+
 
 AsyncWebServer server(80);
 
@@ -34,19 +33,6 @@ void setup(){
   // Initialize Serial Monitor
   Serial.begin(115200);
 
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  // Print local IP address and start web server
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  
   //GPIO
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
@@ -69,8 +55,20 @@ void setup(){
     file.close();
     file = root.openNextFile();
   }
+  // Wifi Connexion
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
   
-  
+  // Print local IP address and start web server
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
   
   //SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -116,10 +114,10 @@ void setup(){
   });
   server.begin();
   Serial.println("Serveur actif!");
-
-   // Clear the display:
-  display.clear();
+  
   timeClient.begin();
+  timeClient.setTimeOffset(3600);
+  display.clear();
   
   
 }
