@@ -8,7 +8,7 @@
 // Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
-// Create display object of type TM1637Display:
+// Create display object of type TM1637Display
 TM1637Display display = TM1637Display(CLK, DIO);              
 
 const char *ssid     = "TOPNET_Karim_Ext";
