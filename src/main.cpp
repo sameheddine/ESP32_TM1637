@@ -93,24 +93,29 @@ void setup(){
   server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
   });
-  server.on("/lireLuminosite", HTTP_GET, [](AsyncWebServerRequest *request) {
-    int val = analogRead(capteurLuminosite);
-    String luminosite = String(val);
-    request->send(200, "text/plain", luminosite);
-  });
-  
+    
   server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
   {
     digitalWrite(led, HIGH);
-    request->send(200);
+    request->send(204);
   });
 
   server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
   {
     digitalWrite(led, LOW);
-    request->send(200);
+    request->send(204);
   });
-
+ 
+  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
+  {
+    String message;
+    if(request->hasParam("valeurTimeZone", true))
+    {
+      message = request ->getParam("valeurTimeZone", true)->value();
+      valeurTimeZone = message.toInt();
+    }
+    request->send(204);
+  });
   server.begin();
   Serial.println("Serveur actif!");
 
