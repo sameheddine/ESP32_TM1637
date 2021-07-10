@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $("#apply").click(function(){
-        var valeur = $("#choixTimeZone").val();
+        var valeur = $("#selectTimeZone").val();
         $.post("timeZone",{
             valeurTimeZone: valeur
         });
