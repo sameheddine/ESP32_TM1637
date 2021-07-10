@@ -102,6 +102,7 @@ void setup(){
   server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
   {
     String message;
+    String valeurTimeZone;
     if(request->hasParam("valeurTimeZone", true))
     {
       message = request ->getParam("valeurTimeZone", true)->value();
@@ -117,12 +118,7 @@ void setup(){
 
   // Initialize a NTPClient to get time
   timeClient.begin();
-  // Set offset time in seconds to adjust for your timezone, for example:
-  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-  // GMT +1 = 3600
-  // GMT +8 = 28800
-  // GMT -1 = -3600
-  // GMT 0 = 0
+  
   timeClient.setTimeOffset(3600);
   display.clear();
 }
