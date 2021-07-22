@@ -1,66 +1,137 @@
-/*
-https://projetsdiy.fr/liste-adresses-i2c-modules-breakout-esp32-esp8266-arduino-raspberrypi/
-*/
-#include <Arduino.h>
-#include <Wire.h>
+#include <NTPClient.h>
+#include <TM1637Display.h>
+#include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
+//test
+// Define the connections pins to TM1637Display:
+#define CLK 21                     
+#define DIO 22
 
-#define DISPLAY_ERROR false 
-#define LOOP_DELAY    10000
-#define USER_PIN      false
+ // Create display object of type TM1637Display:
+TM1637Display display = TM1637Display(CLK, DIO);             
 
-// Personnaliser les broches du bus I2C pour ESP8266 ou ESP32 
-// Customize I2C bus pins for ESP8266 or ESP32
-const int PIN_SCL = 21;
-const int PIN_SDA = 22;
+//Network credentials
+const char *ssid     = "TOPNET_Karim_Ext";
+const char *password = "ksmk@050703";
 
-String I2Ctest() {
-  byte error, address;
-  int nDevices;
-  String s;
- 
-  s="Scanning...\n";
- 
-  nDevices = 0;
-  for(address = 1; address < 127; address++ ) {  
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
- 
-    if (error == 0) {
-      s+="I2C device found at 0x";
-      if (address<16)
-        s+="0";
-        s+=String(address,HEX);
-        s+="\n";
- 
-      nDevices++;
-    } else if ( error > 0 ) {
-      if ( DISPLAY_ERROR ) {
-        s+="Unknow error at 0x";
-        if (address<16)
-          s+="0";
-          s+=String(address,HEX);
-          s+="\n";
-      }  
-    }    
-  }
-  if (nDevices == 0)
-    s+="No I2C devices found\n";
-  else
-    s+="done\n";
-  return s; 
-}
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
-void setup() {
+// Define LED et capteur 
+const int led = 2;
+const int capteurLuminosite = 34;
+
+
+AsyncWebServer server(80);
+
+void setup(){ 
+  // Initialize Serial Monitor
   Serial.begin(115200);
-  Serial.println("I2C scanner");
-  #if USER_PIN
-    Wire.begin(PIN_SDA, PIN_SCL);
-  #else
-    Wire.begin();
-  #endif
+
+  //GPIO
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
+  pinMode(capteurLuminosite, INPUT);
+  
+  //SPIFFS
+   if (!SPIFFS.begin())
+  {
+    Serial.println("Erreur SPIFFS...");
+    return;
+  }
+
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+
+  while (file)
+  {
+    Serial.print("File: ");
+    Serial.println(file.name());
+    file.close();
+    file = root.openNextFile();
+  }
+  // Wifi Connexion
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  // Print local IP address and start web server
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println("MAC Address");
+  Serial.println(WiFi.macAddress());
+  
+  //SERVER
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+
+  server.on("/w3.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/w3.css", "text/css");
+  });
+
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/script.js", "text/javascript");
+  });
+
+  server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
+  });
+    
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request){
+    digitalWrite(led, HIGH);
+    request->send(204);
+  });
+
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request){
+    digitalWrite(led, LOW);
+    request->send(204);
+  });
+  
+  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)  {
+    String message;
+    if(request ->hasParam("valeurTimeZone", true))
+    {
+      message = request ->getParam("valeurTimeZone", true)->value();
+      //valeurTimeZone = message.toInt();
+    }
+    request->send(204);
+    Serial.println(message);
+  });
+  
+  server.begin();
+  Serial.println("Serveur actif!");
+  
+  timeClient.begin();
+  timeClient.setTimeOffset(3600);
+  display.clear();
+    
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.println(I2Ctest());
-  delay(LOOP_DELAY);
+  while(!timeClient.update()) {
+    timeClient.forceUpdate();
+  }
+  display.setBrightness(7);                   // Set the brightness:
+  
+  int A,B;
+  A = timeClient.getHours() * 100 + timeClient.getMinutes();
+  B = timeClient.getSeconds();
+  
+  if((B % 2) == 0)
+  {
+    display.showNumberDecEx(A, 0b01000000 , false, 4, 0); 
+  }
+  else
+  {
+    display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
+  }
+  
+}
