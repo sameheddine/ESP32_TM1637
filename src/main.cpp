@@ -16,10 +16,8 @@ const char *password = "ksmk@050703";
 
 
 //Define Time Zone
-int valeurTimeZone = 0;
-const long utcOffsetInSeconds = valeurTimeZone;  //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-    
-
+int valeurTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = valeurTimeZone;  
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
