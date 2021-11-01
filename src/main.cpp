@@ -107,7 +107,7 @@ void setup(){
       //valeurTimeZone = message.toInt();
     }
     request->send(204);
-    Serial.println(message);
+    Serial.println(valUserTZ);
   });
   
   server.begin();
