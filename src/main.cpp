@@ -14,6 +14,10 @@ TM1637Display display = TM1637Display(CLK, DIO);
 const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 
+//Define Time Zone
+int valeurTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = valeurTimeZone;  
+
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
