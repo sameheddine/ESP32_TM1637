@@ -2,7 +2,7 @@ $(document).ready(function(){
     $("#apply").click(function(){
         var valeur = $("#userTimeZone").val();
         $.post("timeZone",{
-            valeurTimeZone: valeur
+            valeurTimeZone: valUserTimeZone
         });
     });
 });
