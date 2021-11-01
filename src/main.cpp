@@ -103,7 +103,7 @@ void setup(){
     String message;
     if(request ->hasParam("valeurTimeZone", true))
     {
-      message = request ->getParam("valeurTimeZone", true)->value();
+      valUserTZ = request ->getParam("valeurTimeZone", true)->value();
       //valeurTimeZone = message.toInt();
     }
     request->send(204);
