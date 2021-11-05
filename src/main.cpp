@@ -16,8 +16,8 @@ const char *password = "ksmk@050703";
 
 
 //Define Time Zone
-int valeurTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-const long utcOffsetInSeconds = valeurTimeZone;  
+int valUserTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = valUserTimeZone;  
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
@@ -98,24 +98,26 @@ void setup(){
   {
     digitalWrite(led, HIGH);
     request->send(204);
+    Serial.println("LED ON");
   });
 
   server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
   {
     digitalWrite(led, LOW);
     request->send(204);
+    Serial.println("LED OFF");
   });
  
   server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
   {
     String message;
-    if(request->hasParam("valeurTimeZone", true))
+    if(request->hasParam("valUserTimeZone", true))
     {
-      message = request ->getParam("valeurTimeZone", true)->value();
-      valeurTimeZone = message.toInt();
+      message = request ->getParam("valUserTimeZone", true)->value();
+      valUserTimeZone = message.toInt();
     }
     request->send(204);
-    Serial.println(valeurTimeZone);
+    Serial.println(valUserTimeZone);
     
   });
   
