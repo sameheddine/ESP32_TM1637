@@ -1,30 +1,10 @@
-#include <NTPClient.h>
-#include <TM1637Display.h>     //
+#include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
-// Define the connections pins to TM1637Display:
-#define CLK 22                     
-#define DIO 23
-
- // Create display object of type TM1637Display:
-TM1637Display display = TM1637Display(CLK, DIO);             
-
-// Network credentials
-const char *ssid     = "TOPNET_Karim_Ext";
+const char *ssid = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
-
-
-//Define Time Zone
-int valUserTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-const long utcOffsetInSeconds = valUserTimeZone;  
-
-// Define NTP Client to get time
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
-uint32_t chipId = 0;
-// Define LED et capteur 
+//Managemnt LED
 const int led = 2;
 const int capteurLuminosite = 34;
 
@@ -35,18 +15,19 @@ int previousMillis = 0;
 
 AsyncWebServer server(80);
 
-void setup(){ 
-  //Serial
+void setup()
+{
+  //----------------------------------------------------Serial
   Serial.begin(115200);
   Serial.println("\n");
-  
-  //GPIO
+
+  //----------------------------------------------------GPIO
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
   pinMode(capteurLuminosite, INPUT);
-  
-  //SPIFFS
-   if (!SPIFFS.begin())
+
+  //----------------------------------------------------SPIFFS
+  if (!SPIFFS.begin())
   {
     Serial.println("Erreur SPIFFS...");
     return;
@@ -62,25 +43,23 @@ void setup(){
     file.close();
     file = root.openNextFile();
   }
-  
-  //WIFI
-  WiFi.begin(ssid, password);
 
-  Serial.println("Connection attempt ...");
+  //----------------------------------------------------WIFI
+  WiFi.begin(ssid, password);
+  Serial.print("Tentative de connexion...");
 
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(100);
   }
-  Serial.println("Conntect to ");
-    Serial.println(ssid);
-    Serial.println("ESP IP");
-    Serial.println(WiFi.localIP());
-    Serial.println("MAC Address");
-    Serial.println(WiFi.macAddress());
-  
-  //SERVER
+
+  Serial.println("\n");
+  Serial.println("Connexion etablie!");
+  Serial.print("Adresse IP: ");
+  Serial.println(WiFi.localIP());
+
+  //----------------------------------------------------SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", "text/html");
   });
@@ -102,7 +81,21 @@ void setup(){
     String luminosite = String(val);
     request->send(200, "text/plain", luminosite);
   });
-  
+
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
+    etatLedVoulu = 1;
+    request->send(204);
+    Serial.println("LED ON");
+  });
+
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request) {
+    etatLedVoulu = 0;
+    digitalWrite(led, LOW);
+    etatLed = 0;
+    request->send(204);
+    Serial.println("LED OFF");
+  });
+
   server.on("/delayLed", HTTP_POST, [](AsyncWebServerRequest *request) {
     if(request->hasParam("valeurDelayLed", true))
     {
@@ -111,69 +104,15 @@ void setup(){
       valeurDelayLed = message.toInt();
     }
     request->send(204);
-    Serial.println("valeurDelayLed");
   });
 
-
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
-    digitalWrite(led, HIGH);
-    request->send(204);
-    Serial.println("LED ON");
-  });
-
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
-    digitalWrite(led, LOW);
-    request->send(204);
-    Serial.println("LED OFF");
-  });
- 
-  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
-  {
-    String message;
-    if(request->hasParam("valUserTimeZone", true))
-    {
-      message = request ->getParam("valUserTimeZone", true)->value();
-      valUserTimeZone = message.toInt();
-    }
-    request->send(204);
-    Serial.println(valUserTimeZone);
-    
-  });
-  
   server.begin();
   Serial.println("Serveur actif!");
-
-   // Clear the display:
-  display.clear();
-  timeClient.begin();
-  
-  
 }
 
-void loop() {
-  
-  //Time 
-  int A,B;
-  
-  timeClient.update();
-  display.setBrightness(7);                   // Set the brightness:
-  
-  A = timeClient.getHours() * 100 + timeClient.getMinutes();
-  B = timeClient.getSeconds();
-  
-  if((B % 2) == 0)
-  {
-    display.showNumberDecEx(A, 0b01000000 , false, 4, 0); 
-  }
-  else
-  {
-    display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
-  }
- // LED Status
-
- if(etatLedVoulu)
+void loop()
+{
+  if(etatLedVoulu)
   {
     unsigned long currentMillis = millis();
     if(currentMillis - previousMillis >= valeurDelayLed)
