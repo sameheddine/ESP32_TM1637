@@ -27,8 +27,11 @@ uint32_t chipId = 0;
 // Define LED et capteur 
 const int led = 2;
 const int capteurLuminosite = 34;
+
+int valeurDelayLed = 1000;
 bool etatLed = 0;
 bool etatLedVoulu = 0;
+int previousMillis = 0;
 
 AsyncWebServer server(80);
 
@@ -93,7 +96,24 @@ void setup(){
   server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
   });
-    
+
+  server.on("/lireLuminosite", HTTP_GET, [](AsyncWebServerRequest *request) {
+    int val = analogRead(capteurLuminosite);
+    String luminosite = String(val);
+    request->send(200, "text/plain", luminosite);
+  });
+  
+  server.on("/delayLed", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if(request->hasParam("valeurDelayLed", true))
+    {
+      String message;
+      message = request->getParam("valeurDelayLed", true)->value();
+      valeurDelayLed = message.toInt();
+    }
+    request->send(204);
+  });
+
+
   server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
   {
     digitalWrite(led, HIGH);
@@ -132,6 +152,8 @@ void setup(){
 }
 
 void loop() {
+  
+  //Time 
   int A,B;
   
   timeClient.update();
@@ -148,5 +170,17 @@ void loop() {
   {
     display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
   }
- 
+ // LED Status
+
+ if(etatLedVoulu)
+  {
+    unsigned long currentMillis = millis();
+    if(currentMillis - previousMillis >= valeurDelayLed)
+    {
+      previousMillis = currentMillis;
+
+      etatLed = !etatLed;
+      digitalWrite(led, etatLed);
+    }
+  }
 }
