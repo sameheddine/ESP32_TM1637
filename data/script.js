@@ -1,12 +1,13 @@
 //Blinking speed//
 $(document).ready(function(){
-    $("#appliquer").click(function(){
+    $("#applyBlinking").click(function(){
         var valeur = $("#choixDelayLed").val();
         $.post("delayLed",{
             valeurDelayLed: valeur
         });
     });
 });
+
 //Brightness value//
 setInterval(function getData() {
     var xhttp = new XMLHttpRequest();
@@ -20,8 +21,16 @@ setInterval(function getData() {
     xhttp.open("GET", "lireLuminosite", true);
     xhttp.send();
 }, 2000);
-//Time Zone//
 
+//Time Zone//
+$(document).ready(function(){
+    $("#applyTimeZone").click(function(){ //applyTimeZone ==>Button aplay
+        var valeur = $("#userTimeZone").val(); //userTimeZone==> ID List
+        $.post("timezone",{ //timezone ==> URL PAGE
+            valUserTZ: valeur // valUserTZ to send to ESP32
+        });
+    });
+});
 //ON OFF//
 function onButton() {
     var xhttp = new XMLHttpRequest();
