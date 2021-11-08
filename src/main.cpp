@@ -21,15 +21,15 @@ int previousMillis = 0;
 TM1637Display display = TM1637Display(CLK, DIO);            
 
 //Define Time Zone
-int valUserTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-const long utcOffsetInSeconds = valUserTimeZone;  
+int valUserTZ = 3600; //For Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = valUserTZ;  
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 //Time Zone
-int valUserTZ = 3600;
+//int valUserTZ = 3600;
 
 AsyncWebServer server(80);
 
@@ -123,6 +123,7 @@ void setup()
       valDelayLed = msgDelayLED.toInt();
     }
     request->send(204);
+    Serial.print("Time Blinking: ");
     Serial.println(valDelayLed);
   });
 
@@ -134,6 +135,7 @@ void setup()
       valUserTZ = msgTimeZone.toInt();
     }
     request->send(204);
+    Serial.print("Time Zone: ");
     Serial.println(valUserTZ);
   });
 
