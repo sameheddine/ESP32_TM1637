@@ -1,9 +1,9 @@
 //Blinking speed//
-$(document).ready(function(){
-    $("#applyBlinking").click(function(){
-        var valeur = $("#choixDelayLed").val();
-        $.post("delayLed",{
-            valeurDelayLed: valeur
+$(document).ready(function(){ // Where page is open, 
+    $("#applyBlinking").click(function(){ //waitng user to click BTN 
+        var UserDelyLed = $("#choixDelayLed").val(); // GEt the value from choixDelayLed
+        $.post("delayLed",{ //creat Post request from page ESP32/delayled
+            valDelayLed: UserDelyLed //Send UserDelyLed in argument named valDelayLed
         });
     });
 });

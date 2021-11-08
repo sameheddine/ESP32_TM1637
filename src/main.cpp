@@ -3,13 +3,13 @@
 #include <SPIFFS.h>
 #include <NTPClient.h>
 #include <TM1637Display.h>
-//Wifi Seting
+//Wifi credentials
 const char *ssid = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 //Managemnt LED
 const int led = 2;
 const int capteurLuminosite = 34;
-int valeurDelayLed = 1000;
+int valDelayLed = 1000;
 bool etatLed = 0;
 bool etatLedVoulu = 0;
 int previousMillis = 0;
@@ -116,14 +116,14 @@ void setup()
   });
 
   server.on("/delayLed", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if(request->hasParam("valeurDelayLed", true))
+    if(request->hasParam("valDelayLed", true))
     {
       String msgDelayLED;
-      msgDelayLED = request->getParam("valeurDelayLed", true)->value();
-      valeurDelayLed = msgDelayLED.toInt();
+      msgDelayLED = request->getParam("valDelayLed", true)->value();
+      valDelayLed = msgDelayLED.toInt();
     }
     request->send(204);
-    Serial.println(valeurDelayLed);
+    Serial.println(valDelayLed);
   });
 
   server.on("/timezone", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -166,7 +166,7 @@ void loop(){
   if(etatLedVoulu)
   {
     unsigned long currentMillis = millis();
-    if(currentMillis - previousMillis >= valeurDelayLed)
+    if(currentMillis - previousMillis >= valDelayLed)
     {
       previousMillis = currentMillis;
 
