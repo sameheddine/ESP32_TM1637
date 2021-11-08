@@ -1,17 +1,35 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-
+#include <NTPClient.h>
+#include <TM1637Display.h>
+//Wifi Seting
 const char *ssid = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 //Managemnt LED
 const int led = 2;
 const int capteurLuminosite = 34;
-
 int valeurDelayLed = 1000;
 bool etatLed = 0;
 bool etatLedVoulu = 0;
 int previousMillis = 0;
+// Define the connections pins to TM1637Display:
+#define CLK 22                     
+#define DIO 23
+
+ // Create display object of type TM1637Display:
+TM1637Display display = TM1637Display(CLK, DIO);            
+
+//Define Time Zone
+int valUserTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+const long utcOffsetInSeconds = valUserTimeZone;  
+
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+
+//Time Zone
+int valUserTZ = 3600;
 
 AsyncWebServer server(80);
 
@@ -80,6 +98,7 @@ void setup()
     int val = analogRead(capteurLuminosite);
     String luminosite = String(val);
     request->send(200, "text/plain", luminosite);
+    //Serial.println(luminosite);
   });
 
   server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -99,19 +118,51 @@ void setup()
   server.on("/delayLed", HTTP_POST, [](AsyncWebServerRequest *request) {
     if(request->hasParam("valeurDelayLed", true))
     {
-      String message;
-      message = request->getParam("valeurDelayLed", true)->value();
-      valeurDelayLed = message.toInt();
+      String msgDelayLED;
+      msgDelayLED = request->getParam("valeurDelayLed", true)->value();
+      valeurDelayLed = msgDelayLED.toInt();
     }
     request->send(204);
+    Serial.println(valeurDelayLed);
+  });
+
+  server.on("/timezone", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if(request->hasParam("valUserTZ", true))
+    {
+      String msgTimeZone;
+      msgTimeZone = request->getParam("valUserTZ", true)->value();
+      valUserTZ = msgTimeZone.toInt();
+    }
+    request->send(204);
+    Serial.println(valUserTZ);
   });
 
   server.begin();
   Serial.println("Serveur actif!");
+  // Clear the display:
+  display.clear();
+  timeClient.begin();
 }
 
-void loop()
-{
+void loop(){
+  //Time 
+  int A,B;
+  
+  timeClient.update();
+  display.setBrightness(7);                   // Set the brightness:
+  
+  A = timeClient.getHours() * 100 + timeClient.getMinutes();
+  B = timeClient.getSeconds();
+  
+  if((B % 2) == 0)
+  {
+    display.showNumberDecEx(A, 0b01000000 , false, 4, 0); 
+  }
+  else
+  {
+    display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
+  }
+  //Blinking speed
   if(etatLedVoulu)
   {
     unsigned long currentMillis = millis();

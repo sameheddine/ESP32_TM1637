@@ -14,33 +14,80 @@
     <div class="w3-card w3-blue w3-padding-small w3-center">
         <h1>ESP32</h1>
     </div>
-
+    <!--------ON/OFF--------->
     <div class="w3-margin w3-center w3-card w3-padding-24">
-        <h3 class="w3-padding">Allumer/Éteindre la LED</h3>
+        <h3 class="w3-padding">ON/OFF LED</h3>
         <button onclick="onButton()" class="w3-button w3-green w3-xlarge w3-ripple w3-wide"
             style="width:40%;">ON</button>
         <button onclick="offButton()" class="w3-button w3-red w3-xlarge w3-ripple w3-wide"
             style="width:40%;">OFF</button>
         <br><br>
     </div>
-
+    <!-------Blinking speed-------->
     <div class="w3-margin w3-center w3-card w3-padding-24">
-        <h3 class="w3-padding">Vitesse de clignotement <br> de la LED</h3>
+        <h3 class="w3-padding">LED speed  Blinking </h3>
 
         <select id="choixDelayLed" class="w3-select" style="width:80%;">
             <option value="" disabled selected>Choisir un délais</option>
-            <option value="250"> 250 millisecondes</option>
-            <option value="1000"> 1000 millisecondes</option>
-            <option value="2000"> 2000 millisecondes</option>
+            <option value="250">  0,25 secondes</option>
+            <option value="500">  0,5 secondes</option>
+            <option value="1000"> 1 secondes</option>
+            <option value="1500"> 1,5 secondes</option>
+            <option value="2000"> 2 secondes</option>
+            <option value="2500"> 2,5 secondes</option>
         </select>
-        
         <br><br>
-
-        <button id="appliquer" class="w3-button w3-white w3-border w3-xlarge w3-ripple w3-wide">Appliquer</button>
+        <button id="applyBlinking" class="w3-button w3-white w3-border w3-xlarge w3-ripple w3-wide">Apply</button>
     </div>
-
+    <!-------Time Zone-------->
     <div class="w3-margin w3-center w3-card w3-padding-24">
-        <h3 class="w3-padding">Niveau de luminosité</h3>
+        <h3 class="w3-padding">Select your Time Zone</h3>
+        <select id="userTimeZone" class="w3-select" style="width:80%;" >
+            <option value="-43200">(UTC/GMT -12) Eniwetok, Kwajalein</option>
+            <option value="-39600">(UTC/GMT -11) Midway Island, Samoa</option>
+            <option value="-36000">(UTC/GMT -10) Hawaii</option>
+            <option value="-34200">(UTC/GMT -9:30) Taiohae</option>
+            <option value="-32400">(UTC/GMT -9) Alaska</option>
+            <option value="-28800">(UTC/GMT -8) Pacific Time (US &amp; Canada)</option>
+            <option value="-25200">(UTC/GMT -7) Mountain Time (US &amp; Canada)</option>
+            <option value="-21600">(UTC/GMT -6) Central Time (US &amp; Canada), Mexico City</option>
+            <option value="-18000">(UTC/GMT -5) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+            <option value="-14400">(UTC/GMT -4) Atlantic Time (Canada), Caracas, La Paz</option>
+            <option value="-10800">(UTC/GMT -3) Brazil, Buenos Aires, Georgetown</option>
+            <option value="-9000">(UTC/GMT -2:30) St. John's, Newfoundland, Labrador</option>
+            <option value="-7200">(UTC/GMT -2) King Edward Point, South GeorgiaMid-Atlantic</option>
+            <option value="-3600">(UTC/GMT -1) Azores, Cape Verde Islands</option>
+            <option value="0" selected="selected">(UTC/GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+            <option value="3600">(UTC/GMT +1) West Central Africa</option>
+            <option value="3600">(UTC/GMT +1) Brussels, Copenhagen, Madrid, Paris</option>
+            <option value="7200">(UTC/GMT +2) Kaliningrad, South Africa</option>
+            <option value="10800">(UTC/GMT +3) Baghdad, Doha, Riyadh, Moscow, St. Petersburg</option>
+            <option value="14400">(UTC/GMT +4) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+            <option value="16200">(UTC/GMT +4:30) Tehran,Kabul</option>
+            <option value="18000">(UTC/GMT +5) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+            <option value="19800">(UTC/GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+            <option value="27000">(UTC/GMT +5:45) Kathmandu, Pokhara</option>
+            <option value="21600">(UTC/GMT +6) Almaty, Dhaka, Colombo</option>
+            <option value="23400">(UTC/GMT +6:30) Yangon, Mandalay</option>
+            <option value="25200">(UTC/GMT +7) Bangkok, Hanoi, Jakarta</option>
+            <option value="28800">(UTC/GMT +8) Beijing, Perth, Singapore, Hong Kong</option>
+            <option value="31500">(UTC/GMT +8:45) Eucla, Western Australia</option>
+            <option value="32400">(UTC/GMT +9) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+            <option value="34200">(UTC/GMT +9:30) Adelaide, Darwin, South Australia, South Australia</option>
+            <option value="36000">(UTC/GMT +10) Eastern Australia, Guam, Vladivostok</option>
+            <option value="37800">(UTC/GMT +10:30) Lord Howe Island</option>
+            <option value="39600">(UTC/GMT +11) Honiara, Magadan, Solomon Islands, New Caledonia</option>
+            <option value="43200">(UTC/GMT +12) Auckland, Wellington, Fiji, Kamchatka</option>
+            <option value="45900">(UTC/GMT +12:45) Chatham Islands</option>
+            <option value="46800">(UTC/GMT +13) Apia, Chatham Islands, Nukualofa</option>
+            <option value="50400">(UTC/GMT +14) Line Islands</option>
+        </select>
+        <br><br>
+        <button id="applyTimeZone" class="btn btn-primary">Apply</button>
+    </div>
+    <!-------Brightness level-------->
+    <div class="w3-margin w3-center w3-card w3-padding-24">
+        <h3 class="w3-padding">Brightness level</h3>
         <p class="w3-xxlarge"><span id="valeurLuminosite">0</span></p>
     </div>
 
