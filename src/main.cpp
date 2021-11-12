@@ -23,8 +23,8 @@ int previousMillis = 0;
 TM1637Display display = TM1637Display(CLK, DIO);            
 
 //Define Time Zone
-int valUserTZ = 3600; 
-const long utcOffsetInSeconds = valUserTZ;  //For Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
+int valUserTZ = 3600; //GMT+1 = 1*60*60 = 3600 seconds difference
+const long utcOffsetInSeconds = valUserTZ;  
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
@@ -165,6 +165,7 @@ void loop(){
     display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
   }
   //Blinking speed
+  
   if(etatLedVoulu)
   {
     unsigned long currentMillis = millis();
