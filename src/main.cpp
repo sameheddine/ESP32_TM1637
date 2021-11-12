@@ -6,6 +6,7 @@
 //Wifi credentials
 const char *ssid = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
+
 //Managemnt LED
 const int led = 2;
 const int capteurLuminosite = 34;
@@ -23,17 +24,11 @@ TM1637Display display = TM1637Display(CLK, DIO);
 
 //Define Time Zone
 int valUserTZ = 3600; 
-bool timeZone = 3600;
-bool stateTZ =3600;
-int perviosTZ= 0;
 const long utcOffsetInSeconds = valUserTZ;  //For Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
-
-
 
 //Web Server
 AsyncWebServer server(80);
