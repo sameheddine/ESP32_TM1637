@@ -21,16 +21,20 @@ int previousMillis = 0;
 TM1637Display display = TM1637Display(CLK, DIO);            
 
 //Define Time Zone
-int valUserTZ = 3600; //For Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-const long utcOffsetInSeconds = valUserTZ;  
+int valUserTZ = 3600; 
+bool timeZone = 3600;
+bool stateTZ =3600;
+int perviosTZ= 0;
+const long utcOffsetInSeconds = valUserTZ;  //For Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
 
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-//Time Zone
-//int valUserTZ = 3600;
 
+
+
+//Web Server
 AsyncWebServer server(80);
 
 void setup()
