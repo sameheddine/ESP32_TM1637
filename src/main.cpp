@@ -30,37 +30,47 @@ const long utcOffsetInSeconds = valUserTZ;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
-//Web Server
-AsyncWebServer server(80);
 
+
+// Initialize SPIFFS
+void initSPIFFS() {
+  if (!SPIFFS.begin(true)) {
+    Serial.println("An error has occurred while mounting SPIFFS");
+  }
+  else{
+    Serial.println("SPIFFS mounted successfully");
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    Serial.print("File: ");
+    Serial.println(file.name());
+  }
+}
+
+// Initialize WiFi
+void initWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi ..");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print('.');
+    delay(1000);
+  }
+  Serial.println(WiFi.localIP());
+}
+
+// Create AsyncWebServer object on port 80
+AsyncWebServer server(80);
 void setup()
 {
   //----------------------------------------------------Serial
   Serial.begin(115200);
   Serial.println("\n");
-
+  initWiFi();
+  initSPIFFS();
   //----------------------------------------------------GPIO
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
   pinMode(capteurLuminosite, INPUT);
-
-  //----------------------------------------------------SPIFFS
-  if (!SPIFFS.begin())
-  {
-    Serial.println("Erreur SPIFFS...");
-    return;
-  }
-
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
-
-  while (file)
-  {
-    Serial.print("File: ");
-    Serial.println(file.name());
-    file.close();
-    file = root.openNextFile();
-  }
 
   //----------------------------------------------------WIFI
   WiFi.begin(ssid, password);
