@@ -3,6 +3,7 @@
 #include <SPIFFS.h>
 #include <NTPClient.h>
 #include <TM1637Display.h>
+
 //Wifi credentials
 const char *ssid = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
@@ -29,8 +30,6 @@ const long utcOffsetInSeconds = valUserTZ;
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
-
 
 // Initialize SPIFFS
 void initSPIFFS() {
@@ -71,21 +70,6 @@ void setup()
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
   pinMode(capteurLuminosite, INPUT);
-
-  //----------------------------------------------------WIFI
-  WiFi.begin(ssid, password);
-  Serial.print("Tentative de connexion...");
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(100);
-  }
-
-  Serial.println("\n");
-  Serial.println("Connexion etablie!");
-  Serial.print("Adresse IP: ");
-  Serial.println(WiFi.localIP());
 
   //----------------------------------------------------SERVER
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
