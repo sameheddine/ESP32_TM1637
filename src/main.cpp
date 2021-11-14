@@ -1,8 +1,10 @@
 #include <NTPClient.h>
 #include <TM1637Display.h>     //
-#include <ESPAsyncWebServer.h>
+//#include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
+#include <WiFi.h>
+#include <time.h>
 // Define the connections pins to TM1637Display:
 #define CLK 22                     
 #define DIO 23
@@ -15,173 +17,69 @@ const char *ssid     = "TOPNET_Karim_Ext";
 const char *password = "ksmk@050703";
 
 
-//Define Time Zone
-int valUserTimeZone = 3600; //Tunisia time zone is GMT+1 = 1*60*60 = 3600seconds difference
-const long utcOffsetInSeconds = valUserTimeZone;  
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
 
-// Define NTP Client to get time
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
-uint32_t chipId = 0;
-// Define LED et capteur 
-const int led = 2;
-const int capteurLuminosite = 34;
-
-int valeurDelayLed = 1000;
-bool etatLed = 0;
-bool etatLedVoulu = 0;
-int previousMillis = 0;
-
-AsyncWebServer server(80);
-
-void setup(){ 
-  //Serial
-  Serial.begin(115200);
-  Serial.println("\n");
-  
-  //GPIO
-  pinMode(led, OUTPUT);
-  digitalWrite(led, LOW);
-  pinMode(capteurLuminosite, INPUT);
-  
-  //SPIFFS
-   if (!SPIFFS.begin())
-  {
-    Serial.println("Erreur SPIFFS...");
+void printLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
     return;
   }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  Serial.print("Day of week: ");
+  Serial.println(&timeinfo, "%A");
+  Serial.print("Month: ");
+  Serial.println(&timeinfo, "%B");
+  Serial.print("Day of Month: ");
+  Serial.println(&timeinfo, "%d");
+  Serial.print("Year: ");
+  Serial.println(&timeinfo, "%Y");
+  Serial.print("Hour: ");
+  Serial.println(&timeinfo, "%H");
+  Serial.print("Hour (12 hour format): ");
+  Serial.println(&timeinfo, "%I");
+  Serial.print("Minute: ");
+  Serial.println(&timeinfo, "%M");
+  Serial.print("Second: ");
+  Serial.println(&timeinfo, "%S");
 
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
+  Serial.println("Time variables");
+  char timeHour[3];
+  strftime(timeHour,3, "%H", &timeinfo);
+  Serial.println(timeHour);
+  char timeWeekDay[10];
+  strftime(timeWeekDay,10, "%A", &timeinfo);
+  Serial.println(timeWeekDay);
+  Serial.println();
+}
 
-  while (file)
-  {
-    Serial.print("File: ");
-    Serial.println(file.name());
-    file.close();
-    file = root.openNextFile();
-  }
-  
-  //WIFI
+void setup(){
+  Serial.begin(115200);
+
+  // Connect to Wi-Fi
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
   WiFi.begin(ssid, password);
-
-  Serial.println("Connection attempt ...");
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
     Serial.print(".");
-    delay(100);
   }
-  Serial.println("Conntect to ");
-    Serial.println(ssid);
-    Serial.println("ESP IP");
-    Serial.println(WiFi.localIP());
-    Serial.println("MAC Address");
-    Serial.println(WiFi.macAddress());
+  Serial.println("");
+  Serial.println("WiFi connected.");
   
-  //SERVER
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/index.html", "text/html");
-  });
+  // Init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
 
-  server.on("/w3.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/w3.css", "text/css");
-  });
-
-  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/script.js", "text/javascript");
-  });
-
-  server.on("/jquery-3.4.1.min.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/jquery-3.4.1.min.js", "text/javascript");
-  });
-
-  server.on("/lireLuminosite", HTTP_GET, [](AsyncWebServerRequest *request) {
-    int val = analogRead(capteurLuminosite);
-    String luminosite = String(val);
-    request->send(200, "text/plain", luminosite);
-  });
-  
-  server.on("/delayLed", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if(request->hasParam("valeurDelayLed", true))
-    {
-      String message;
-      message = request->getParam("valeurDelayLed", true)->value();
-      valeurDelayLed = message.toInt();
-    }
-    request->send(204);
-    Serial.println("valeurDelayLed");
-  });
-
-
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
-    digitalWrite(led, HIGH);
-    request->send(204);
-    Serial.println("LED ON");
-  });
-
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
-  {
-    digitalWrite(led, LOW);
-    request->send(204);
-    Serial.println("LED OFF");
-  });
- 
-  server.on("/timeZone", HTTP_POST, [](AsyncWebServerRequest *request)
-  {
-    String message;
-    if(request->hasParam("valUserTimeZone", true))
-    {
-      message = request ->getParam("valUserTimeZone", true)->value();
-      valUserTimeZone = message.toInt();
-    }
-    request->send(204);
-    Serial.println(valUserTimeZone);
-    
-  });
-  
-  server.begin();
-  Serial.println("Serveur actif!");
-
-   // Clear the display:
-  display.clear();
-  timeClient.begin();
-  
-  
+  //disconnect WiFi as it's no longer needed
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
 }
 
-void loop() {
-  
-  //Time 
-  int A,B;
-  
-  timeClient.update();
-  display.setBrightness(7);                   // Set the brightness:
-  
-  A = timeClient.getHours() * 100 + timeClient.getMinutes();
-  B = timeClient.getSeconds();
-  
-  if((B % 2) == 0)
-  {
-    display.showNumberDecEx(A, 0b01000000 , false, 4, 0); 
-  }
-  else
-  {
-    display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
-  }
- // LED Status
-
- if(etatLedVoulu)
-  {
-    unsigned long currentMillis = millis();
-    if(currentMillis - previousMillis >= valeurDelayLed)
-    {
-      previousMillis = currentMillis;
-
-      etatLed = !etatLed;
-      digitalWrite(led, etatLed);
-    }
-  }
+void loop(){
+  delay(1000);
+  printLocalTime();
 }
+
