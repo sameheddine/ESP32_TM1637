@@ -6,7 +6,7 @@
 
 //Wifi credentials
 const char *ssid = "TOPNET_Karim_Ext";
-const char *password = "ksmk@050703";
+const char *password = "S@m71399674";
 
 //Managemnt LED
 const int led = 2;
