@@ -146,20 +146,23 @@ void loop(){
   
   timeClient.update();
   display.setBrightness(7);                   // Set the brightness:
-  
+  //Store hours and minute in varible A
   A = timeClient.getHours() * 100 + timeClient.getMinutes();
+  //Store seconds in variable B
   B = timeClient.getSeconds();
   
   if((B % 2) == 0)
-  {
+  { 
+    //Send variable A to Seven Segment
     display.showNumberDecEx(A, 0b01000000 , false, 4, 0); 
   }
   else
   {
+    //Send variable B to Seven Segment
     display.showNumberDecEx(A, 0b00000000 , false, 4, 0); 
   }
-  //Blinking speed
   
+  //Blinking speed
   if(etatLedVoulu)
   {
     unsigned long currentMillis = millis();
